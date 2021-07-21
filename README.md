@@ -1,1 +1,2 @@
-# ProyectoCompi
+# Victor Ostolaza
+# Christian Ledgard
