@@ -1,11 +1,6 @@
-bool a;
-bool a;
-int b;
-
-b = 1+1;
-c = 3;
-a = 0;
-a = b+3;
-a;
-d;
-
+entero func(sin_tipo args) {
+    entero a;
+    entero b;
+    a = 3;
+    b = 5;
+   }

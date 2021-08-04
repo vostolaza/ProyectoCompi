@@ -55,6 +55,7 @@ int_const	{digit}+
 
 "*"		{ yylval.op_val = new std::string(yytext); return MULT; }
 "+"		{ yylval.op_val = new std::string(yytext); return PLUS; }
+"-"		{ yylval.op_val = new std::string(yytext); return MINUS; }
 "="     { yylval.op_val = new std::string(yytext); return ASSIGN; }
 "/"     { yylval.op_val = new std::string(yytext); return DIV; }
 

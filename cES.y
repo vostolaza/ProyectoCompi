@@ -8,7 +8,7 @@ extern "C" int yylex();
 
 enum var_type {
   int_t, void_t
-}
+};
 
 struct type_val{
   var_type type;
@@ -30,7 +30,7 @@ void actualizar_simbolo(string, type_val new_val);
   string* id_val;
 }
 
-%start	input 
+%start	programa 
 
 %token EOS
 %token OPENPAR
@@ -52,11 +52,12 @@ void actualizar_simbolo(string, type_val new_val);
 %token ELSE
 %token COMMA
 %token <int_val>	NUM
-%token <op_val> ID
+%token <id_val> ID
 %token <int_val> INT
 %token <op_val> ASSIGN
 //%type	<int_val>	exp
 %left	PLUS
+%left MINUS
 %left	MULT
 %left DIV
 
@@ -88,7 +89,19 @@ var_declaracion:
         yyerror("Simbolo ya definido!");
       }
   }
-  | INT ID OPENSQB NUM CLOSESQB EOS
+  | INT ID OPENSQB NUM CLOSESQB EOS { 
+    if(!buscar_simbolo(string(*$2)))
+      {
+          type_val t;
+          t.type=int_t;
+          insertar_simbolo(string(*$2), t);
+        }
+        else
+        {
+          /* Error */
+          yyerror("Simbolo ya definido!");
+        }
+    }
   ;
 
 tipo:
@@ -97,7 +110,7 @@ tipo:
   ;
 
 fun_declaracion:
-  tipo ID OPENPAR params CLOSEPAR sent_compuesta
+  tipo ID OPENPAR params CLOSEPAR sent_compuesta 
   ;
 
 params:
@@ -107,12 +120,12 @@ params:
 
 lista_params:
   lista_params COMMA param 
-  | param
+  | param 
   ;
 
 param:
   tipo ID
-  | tipo ID OPENSQB CLOSESQB
+  | tipo ID OPENSQB CLOSESQB 
   ;
 
 sent_compuesta:
@@ -120,54 +133,105 @@ sent_compuesta:
   ;
 
 declaracion_local:
-  declaracion_local var_declaracion
-  | 
+  declaracion_local var_declaracion 
+  | %empty
+  ;
 
+lista_sentencias:
+  lista_sentencias sentencia
+  | %empty
+  ;
 
-input:		/* empty */
-		| input decl	/*{ cout << "Result: " << $1 << endl; }*/
-    | input sent
-    | decl
-    | sent
-		;
+sentencia:
+  sentencia_expresion 
+  | sentencia_seleccion 
+  | sentencia_iteracion 
+  | sentencia_retorno 
+  ;
 
-decl:
-    BOOL ID EOS {
-      if(!buscar_simbolo(string(*$2)))
-      {
-        type_val t;
-        t.type=$1;
-        insertar_simbolo(string(*$2), t);
-      }
-      else
-      {
-        /* Error */
-        yyerror("Simbolo ya definido!");
-      }
-    }
-    | INT ID EOS {
-      if(!buscar_simbolo(string(*$2)))
-      {
-        type_val t;
-        t.type=$1;
-        insertar_simbolo(string(*$2), t);
-      }
-      else
-      {
-        /* Error */
-        yyerror("Simbolo ya definido!");
-      }
-    }
-    | ID EOS {}
+sentencia_expresion:
+  expresion EOS 
+  | EOS 
+  ;
 
-sent:
-    ID ASSIGN exp EOS {}
+sentencia_seleccion:
+  IF OPENPAR expresion CLOSEPAR sentencia 
+  | IF OPENPAR expresion CLOSEPAR sentencia ELSE sentencia 
+  ;
 
-exp:		DIGIT	{ }
-    | ID
-		| exp PLUS exp	{  }
-		| exp MULT exp	{  }
-		;
+sentencia_iteracion:
+  WHILE OPENPAR expresion CLOSEPAR OPENBR lista_sentencias CLOSEBR 
+  ;
+
+sentencia_retorno:
+  RETURN EOS
+  | RETURN expresion EOS
+  ;
+
+expresion:
+  var ASSIGN expresion 
+  | expresion_simple 
+  ;
+  
+var:
+  ID 
+  | ID OPENSQB expresion CLOSESQB 
+  ;
+  
+expresion_simple:
+  expresion_aditiva relop expresion_aditiva
+  | expresion_aditiva
+  ;
+  
+relop:
+  LT 
+  | LEQ 
+  | GT 
+  | GEQ 
+  | EQ 
+  | NEQ 
+  ;
+
+expresion_aditiva:
+  expresion_aditiva addop term  
+  | term 
+  ;
+
+addop:
+  PLUS 
+  | MINUS 
+  ;
+
+term:
+  term mulop factor 
+  | factor 
+  ;
+
+mulop:
+  MULT 
+  | DIV
+  ;
+
+factor:
+  OPENPAR expresion CLOSEPAR  
+  | var 
+  | call 
+  | NUM 
+;
+
+call:
+  ID OPENPAR args CLOSEPAR
+  ;
+
+args:
+  lista_arg
+  | %empty
+  ;
+
+lista_arg:
+  lista_arg COMMA expresion 
+  | expresion
+  ;
 
 %%
 
