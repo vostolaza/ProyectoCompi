@@ -1,6 +1,11 @@
-entero func(sin_tipo args) {
-    entero a;
-    entero b;
-    a = 3;
-    b = 5;
-   }
+sin_tipo main(sin_tipo args) {
+    entero res;
+    entero num;
+    num = 6;
+    res = 1;
+    mientras (num > 0) {
+        res = res * num;
+        num = num - 1;
+    }
+    impimir(res);
+}
